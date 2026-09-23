@@ -1,0 +1,20 @@
+{
+  "accuracy": 1.0,
+  "balanced_accuracy": 1.0,
+  "precision_weighted": 1.0,
+  "recall_weighted": 1.0,
+  "f1_weighted": 1.0,
+  "roc_auc_sick": 1.0,
+  "average_latency_ms_per_image": 2.4273854958462633,
+  "confusion_matrix": [
+    [
+      100,
+      0
+    ],
+    [
+      0,
+      900
+    ]
+  ],
+  "test_samples": 1000
+}

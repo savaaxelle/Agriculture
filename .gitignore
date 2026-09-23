@@ -1,0 +1,17 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Large raw dataset (regenerate with: python prepare_dataset.py, from archive.zip)
+archive.zip
+raw_dataset/
+
+# Trained/reference model weights (large binaries, exceeds GitHub's 100MB limit for archive.zip
+# and bloats repo history for the .pt files)
+*.pt
+
+# Redundant backup of the source .py files, identical to what's already tracked
+ai_leaf_classifier_ready.zip
