@@ -11,11 +11,12 @@ MODEL_DIR.mkdir(exist_ok=True)
 RESULTS_DIR.mkdir(exist_ok=True)
 
 BEST_MODEL_PATH = MODEL_DIR / "efficientnet_b2_tomato_health.pt"
+CHECKPOINT_PATH = MODEL_DIR / "checkpoint_last.pt"
 
 # torchvision EfficientNet-B2 ImageNet weights use 288 x 288 crop size.
 IMAGE_SIZE = 288
 BATCH_SIZE = 16
-NUM_WORKERS = 2
+NUM_WORKERS = 4
 
 CLASS_NAMES = ["healthy", "sick"]
 NUM_CLASSES = len(CLASS_NAMES)
@@ -26,6 +27,6 @@ TRAIN_RATIO = 0.80
 
 LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 1e-4
-EPOCHS = 20
-EARLY_STOPPING_PATIENCE = 5
+EPOCHS = 50
+EARLY_STOPPING_PATIENCE = 10
 RANDOM_SEED = 42

@@ -5,9 +5,11 @@ import time
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
+from tqdm import tqdm
 
 from config import (
     BEST_MODEL_PATH,
+    CHECKPOINT_PATH,
     RESULTS_DIR,
     EPOCHS,
     LEARNING_RATE,
@@ -38,7 +40,7 @@ def make_class_weights(train_dataset, device):
     return weights.to(device)
 
 
-def run_epoch(model, loader, criterion, device, optimizer=None):
+def run_epoch(model, loader, criterion, device, optimizer=None, desc=""):
     training = optimizer is not None
     model.train(training)
 
@@ -46,23 +48,30 @@ def run_epoch(model, loader, criterion, device, optimizer=None):
     total_correct = 0
     total_samples = 0
 
-    for images, labels in loader:
+    progress = tqdm(loader, desc=desc, leave=False, unit="batch")
+    for images, labels in progress:
         images = images.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
 
         if training:
             optimizer.zero_grad(set_to_none=True)
 
-        logits = model(images)
-        loss = criterion(logits, labels)
+        with torch.set_grad_enabled(training):
+            logits = model(images)
+            loss = criterion(logits, labels)
 
-        if training:
-            loss.backward()
-            optimizer.step()
+            if training:
+                loss.backward()
+                optimizer.step()
 
         total_loss += loss.item() * labels.size(0)
         total_correct += (logits.argmax(1) == labels).sum().item()
         total_samples += labels.size(0)
+
+        progress.set_postfix(
+            loss=f"{total_loss / total_samples:.4f}",
+            acc=f"{total_correct / total_samples:.4f}",
+        )
 
     return total_loss / total_samples, total_correct / total_samples
 
@@ -87,18 +96,34 @@ def main():
         weight_decay=WEIGHT_DECAY,
     )
 
+    start_epoch = 1
     best_val_acc = 0.0
     wait = 0
     history = []
 
-    for epoch in range(1, EPOCHS + 1):
+    if CHECKPOINT_PATH.exists():
+        checkpoint = torch.load(CHECKPOINT_PATH, map_location=device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        start_epoch = checkpoint["epoch"] + 1
+        best_val_acc = checkpoint["best_val_acc"]
+        wait = checkpoint["wait"]
+        history = checkpoint["history"]
+        print(
+            f"[RESUME] Melanjutkan dari epoch {start_epoch} "
+            f"(best_val_acc={best_val_acc:.4f}, wait={wait})"
+        )
+
+    for epoch in range(start_epoch, EPOCHS + 1):
         start = time.time()
 
         train_loss, train_acc = run_epoch(
-            model, train_loader, criterion, device, optimizer
+            model, train_loader, criterion, device, optimizer,
+            desc=f"Epoch {epoch:02d}/{EPOCHS} [train]",
         )
         val_loss, val_acc = run_epoch(
-            model, val_loader, criterion, device
+            model, val_loader, criterion, device,
+            desc=f"Epoch {epoch:02d}/{EPOCHS} [val]",
         )
 
         row = {
@@ -132,12 +157,24 @@ def main():
         else:
             wait += 1
 
+        torch.save(
+            {
+                "epoch": epoch,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "best_val_acc": best_val_acc,
+                "wait": wait,
+                "history": history,
+            },
+            CHECKPOINT_PATH,
+        )
+
+        with open(RESULTS_DIR / "training_history.json", "w", encoding="utf-8") as f:
+            json.dump(history, f, indent=2)
+
         if wait >= EARLY_STOPPING_PATIENCE:
             print("[INFO] Early stopping.")
             break
-
-    with open(RESULTS_DIR / "training_history.json", "w", encoding="utf-8") as f:
-        json.dump(history, f, indent=2)
 
     print(f"[DONE] Best validation accuracy: {best_val_acc:.4f}")
 
