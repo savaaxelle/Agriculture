@@ -10,11 +10,15 @@ RESULTS_DIR = PROJECT_DIR / "results"
 MODEL_DIR.mkdir(exist_ok=True)
 RESULTS_DIR.mkdir(exist_ok=True)
 
-BEST_MODEL_PATH = MODEL_DIR / "efficientnet_b2_tomato_health.pt"
+BEST_MODEL_PATH = MODEL_DIR / "pestconformer_tomato_health.pt"
 CHECKPOINT_PATH = MODEL_DIR / "checkpoint_last.pt"
 
-# torchvision EfficientNet-B2 ImageNet weights use 288 x 288 crop size.
-IMAGE_SIZE = 288
+# ConvMAE-Base ImageNet-pretrained weights released with Pest-ConFormer
+# (https://drive.google.com/file/d/1AEPivXw0A0b_m5EwEi6fg2pOAoDr8C31). Put the file here.
+PRETRAINED_PATH = MODEL_DIR / "base.pth"
+
+# Pest-ConFormer is hard-wired to 224 x 224 input (patch grid 56/28/14).
+IMAGE_SIZE = 224
 BATCH_SIZE = 16
 NUM_WORKERS = 4
 

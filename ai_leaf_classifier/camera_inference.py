@@ -82,7 +82,7 @@ def main():
             2,
         )
 
-        cv2.imshow("Tomato Leaf Health - EfficientNet-B2", frame)
+        cv2.imshow("Tomato Leaf Health - PestConFormer", frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break

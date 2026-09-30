@@ -1,6 +1,6 @@
-# Tomato Leaf Healthy vs Sick — EfficientNet-B2
+# Tomato Leaf Healthy vs Sick — Pest-ConFormer
 
-Project ini memakai **dataset yang sudah ada di `archive.zip`** pada folder project dan melatih **EfficientNet-B2 (PyTorch)** untuk klasifikasi biner:
+Project ini memakai **dataset yang sudah ada di `archive.zip`** pada folder project dan melatih **Pest-ConFormer (hybrid CNN-Transformer, PyTorch)** untuk klasifikasi biner:
 
 - `healthy`
 - `sick`
@@ -49,6 +49,7 @@ ai_leaf_classifier/
 ├── config.py
 ├── dataset.py
 ├── model.py
+├── pestconformer/
 ├── train.py
 ├── evaluate.py
 ├── predict.py
@@ -132,7 +133,7 @@ test:       healthy 100   | sick 900
 
 `train.py` menangani ketidakseimbangan ini menggunakan **class-weighted CrossEntropyLoss**.
 
-## 5. Training EfficientNet-B2
+## 5. Training Pest-ConFormer
 
 ```powershell
 python train.py
@@ -140,8 +141,12 @@ python train.py
 
 Model memakai:
 
-- `EfficientNet_B2_Weights.IMAGENET1K_V1`
-- input `288 x 288`
+- arsitektur dari https://github.com/mwfang/pestconformer (disalin ke `pestconformer/`)
+- pretrained ConvMAE-Base: unduh
+  [base.pth](https://drive.google.com/file/d/1AEPivXw0A0b_m5EwEi6fg2pOAoDr8C31/view?usp=sharing)
+  lalu taruh di `models/base.pth` (jika tidak ada, training dari random init)
+- input `224 x 224` (tetap, ditentukan arsitektur)
+- loss multi-cabang (CE per level + MSE drop-region + CE combiner)
 - ImageNet normalization
 - random crop, flip, rotation, dan color jitter
 - AdamW optimizer
@@ -151,7 +156,7 @@ Model memakai:
 Model terbaik disimpan sebagai:
 
 ```text
-models/efficientnet_b2_tomato_health.pt
+models/pestconformer_tomato_health.pt
 ```
 
 ## 6. Evaluasi
@@ -187,4 +192,4 @@ python camera_inference.py
 
 ## Catatan
 
-File `cnn_train.py` di dalam archive adalah kode CNN Keras lama untuk klasifikasi 10 kelas. Project ini **tidak memakai model tersebut**. Dataset gambarnya saja yang dipakai. Model utama project ini tetap **EfficientNet-B2** sesuai arahan supervisor.
+File `cnn_train.py` di dalam archive adalah kode CNN Keras lama untuk klasifikasi 10 kelas. Project ini **tidak memakai model tersebut**. Dataset gambarnya saja yang dipakai. Model utama project ini sekarang **Pest-ConFormer** (sebelumnya EfficientNet-B2).

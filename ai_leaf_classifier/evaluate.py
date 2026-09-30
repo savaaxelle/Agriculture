@@ -1,6 +1,8 @@
+import argparse
 import json
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from sklearn.metrics import (
@@ -15,6 +17,7 @@ from sklearn.metrics import (
 from config import BEST_MODEL_PATH, CLASS_NAMES, RESULTS_DIR
 from dataset import create_dataloaders
 from model import build_model
+from plots import plot_confusion_matrix, plot_misclassified, plot_training_history
 
 
 def choose_device():
@@ -26,6 +29,10 @@ def choose_device():
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--show", action="store_true", help="open the plots in a window")
+    args = parser.parse_args()
+
     device = choose_device()
     _, _, test_loader = create_dataloaders()
 
@@ -94,6 +101,17 @@ def main():
     print(json.dumps(metrics, indent=2))
     print("\nClassification report:")
     print(report)
+
+    plot_confusion_matrix(cm, RESULTS_DIR / "confusion_matrix.png")
+    plot_training_history(RESULTS_DIR / "training_history.png")
+    plot_misclassified(
+        test_loader.dataset.samples, y_true, y_pred, sick_probs,
+        RESULTS_DIR / "misclassified.png",
+    )
+    print(f"[INFO] Plots saved to {RESULTS_DIR}")
+
+    if args.show:
+        plt.show()
 
 
 if __name__ == "__main__":

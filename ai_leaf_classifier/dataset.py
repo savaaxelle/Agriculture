@@ -30,19 +30,25 @@ def get_transforms():
     train_transform = transforms.Compose([
         transforms.RandomResizedCrop(
             IMAGE_SIZE,
-            scale=(0.80, 1.0),
+            scale=(0.5, 1.0),
+            ratio=(0.8, 1.25),
             interpolation=InterpolationMode.BICUBIC,
         ),
         transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomRotation(12),
+        transforms.RandomVerticalFlip(p=0.3),
+        transforms.RandomRotation(30),
+        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1), shear=10),
         transforms.ColorJitter(
-            brightness=0.15,
-            contrast=0.15,
-            saturation=0.15,
-            hue=0.03,
+            brightness=0.3,
+            contrast=0.3,
+            saturation=0.3,
+            hue=0.06,
         ),
+        transforms.RandomAutocontrast(p=0.2),
+        transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.2),
         transforms.ToTensor(),
         transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+        transforms.RandomErasing(p=0.25, scale=(0.02, 0.15)),
     ])
 
     eval_transform = transforms.Compose([

@@ -18,7 +18,7 @@ from config import (
     CLASS_NAMES,
 )
 from dataset import create_dataloaders
-from model import build_model
+from model import build_model, compute_loss
 
 
 def choose_device():
@@ -57,8 +57,13 @@ def run_epoch(model, loader, criterion, device, optimizer=None, desc=""):
             optimizer.zero_grad(set_to_none=True)
 
         with torch.set_grad_enabled(training):
-            logits = model(images)
-            loss = criterion(logits, labels)
+            outputs = model(images)
+            if training:
+                loss = compute_loss(outputs, labels, criterion.weight)
+                logits = outputs["comb_outs"]
+            else:
+                logits = outputs
+                loss = criterion(logits, labels)
 
             if training:
                 loss.backward()
