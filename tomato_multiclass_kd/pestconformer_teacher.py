@@ -1,7 +1,14 @@
 from pathlib import Path
+import sys
 
 import torch
 import torch.nn as nn
+
+# Allow this starter folder to reuse the existing Pest-ConFormer implementation
+# from the repository root when this file is run from tomato_multiclass_kd/.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from ai_leaf_classifier.pestconformer import convvit_base_patch16
 from config import NUM_CLASSES
